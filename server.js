@@ -5,10 +5,15 @@ const { Buffer } = require("buffer");
 const https = require("https"); // Necessário para o endpoint /my-ip
 
 const app = express();
-const port = process.env.PORT; // ESCUTAR ESTRITAMENTE NA PORTA FORNECIDA PELA APP PLATFORM
+const port = process.env.PORT || 8080; // ESCUTAR ESTRITAMENTE NA PORTA FORNECIDA PELA APP PLATFORM, com fallback para 8080 localmente
 
 // Configuração do site de destino (Goldebet)
 const targetSite = "https://goldebet.bet.br";
+
+// Endpoint de Health Check para DigitalOcean App Platform
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 // Endpoint para retornar o IP de saída do App Platform (útil para depuração)
 app.get("/my-ip", (req, res) => {
@@ -140,7 +145,7 @@ const webProxy = createProxyMiddleware({
 
 app.use("/", webProxy);
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => { // O uso de '0.0.0.0' é crucial para a DigitalOcean
   console.log(`Proxy server rodando na porta ${port}`);
   console.log(`Acessando ${targetSite} diretamente (sem proxy residencial).`);
   console.log(
